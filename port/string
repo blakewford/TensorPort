@@ -1,0 +1,11 @@
+#ifndef _GLIBCXX_STRING
+#define _GLIBCXX_STRING	1
+namespace std
+{
+    class string
+    {
+    public:
+        string(const char*);
+    };
+}
+#endif

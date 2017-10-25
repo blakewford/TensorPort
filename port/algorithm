@@ -1,0 +1,8 @@
+#ifndef _GLIBCXX_ALGORITHM
+#define _GLIBCXX_ALGORITHM 1
+namespace std
+{
+    template<class T>
+    void swap(T&, T&);
+}
+#endif

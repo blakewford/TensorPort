@@ -1,0 +1,11 @@
+#ifndef _GLIBCXX_VECTOR
+#define _GLIBCXX_VECTOR	1
+
+namespace std
+{
+    template<class T>
+    class vector
+    {
+    };
+}
+#endif
