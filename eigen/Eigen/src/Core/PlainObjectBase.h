@@ -498,7 +498,7 @@ class PlainObjectBase : public internal::dense_xpr_base<Derived>::type
     }
 #endif
 
-#if EIGEN_HAS_RVALUE_REFERENCES
+#if EIGEN_HAS_RVALUE_REFERENCES && !defined(__AVR__)
     EIGEN_DEVICE_FUNC
     PlainObjectBase(PlainObjectBase&& other) EIGEN_NOEXCEPT
       : m_storage( std::move(other.m_storage) )

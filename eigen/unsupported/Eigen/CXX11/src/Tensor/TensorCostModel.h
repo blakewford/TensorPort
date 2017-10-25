@@ -141,13 +141,13 @@ class TensorOpCost {
     rhs *= lhs;
     return rhs;
   }
-
+#ifndef __AVR__
   friend std::ostream& operator<<(std::ostream& os, const TensorOpCost& tc) {
     return os << "[bytes_loaded = " << tc.bytes_loaded()
               << ", bytes_stored = " << tc.bytes_stored()
               << ", compute_cycles = " << tc.compute_cycles() << "]";
   }
-
+#endif
  private:
   double bytes_loaded_;
   double bytes_stored_;

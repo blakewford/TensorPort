@@ -967,6 +967,9 @@ namespace Eigen {
 #  ifdef __CUDA_ARCH__
 #    define EIGEN_THROW_X(X) asm("trap;")
 #    define EIGEN_THROW asm("trap;")
+#  elif defined(__AVR__)
+#    define EIGEN_THROW_X(X) abort()
+#    define EIGEN_THROW abort()
 #  else
 #    define EIGEN_THROW_X(X) std::abort()
 #    define EIGEN_THROW std::abort()

@@ -108,10 +108,12 @@ struct Sizes : internal::numeric_list<std::ptrdiff_t, Indices...> {
     // todo: add assertion
   }
 #if EIGEN_HAS_VARIADIC_TEMPLATES
+#ifndef __AVR__
   template <typename... DenseIndex> EIGEN_DEVICE_FUNC Sizes(DenseIndex...) { }
   explicit EIGEN_DEVICE_FUNC Sizes(std::initializer_list<std::ptrdiff_t> /*l*/) {
     // todo: add assertion
   }
+#endif
 #endif
 
   template <typename T> Sizes& operator = (const T& /*other*/) {
@@ -282,7 +284,7 @@ struct DSizes : array<DenseIndex, NumDims> {
     (*this)[0] = i0;
   }
 
-#if EIGEN_HAS_VARIADIC_TEMPLATES
+#if 0
   template<typename... IndexTypes> EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE explicit DSizes(DenseIndex firstDimension, DenseIndex secondDimension, IndexTypes... otherDimensions) : Base({{firstDimension, secondDimension, otherDimensions...}}) {
     EIGEN_STATIC_ASSERT(sizeof...(otherDimensions) + 2 == NumDims, YOU_MADE_A_PROGRAMMING_MISTAKE)

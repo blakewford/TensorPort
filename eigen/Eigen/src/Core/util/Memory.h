@@ -70,7 +70,7 @@ inline void throw_std_bad_alloc()
     throw std::bad_alloc();
   #else
     std::size_t huge = static_cast<std::size_t>(-1);
-    new int[huge];
+    malloc(huge*sizeof(int));
   #endif
 }
 
@@ -85,7 +85,7 @@ inline void throw_std_bad_alloc()
   */
 inline void* handmade_aligned_malloc(std::size_t size)
 {
-  void *original = std::malloc(size+EIGEN_DEFAULT_ALIGN_BYTES);
+  void *original = malloc(size+EIGEN_DEFAULT_ALIGN_BYTES);
   if (original == 0) return 0;
   void *aligned = reinterpret_cast<void*>((reinterpret_cast<std::size_t>(original) & ~(std::size_t(EIGEN_DEFAULT_ALIGN_BYTES-1))) + EIGEN_DEFAULT_ALIGN_BYTES);
   *(reinterpret_cast<void**>(aligned) - 1) = original;
@@ -95,7 +95,7 @@ inline void* handmade_aligned_malloc(std::size_t size)
 /** \internal Frees memory allocated with handmade_aligned_malloc */
 inline void handmade_aligned_free(void *ptr)
 {
-  if (ptr) std::free(*(reinterpret_cast<void**>(ptr) - 1));
+  if (ptr) free(*(reinterpret_cast<void**>(ptr) - 1));
 }
 
 /** \internal
@@ -108,12 +108,12 @@ inline void* handmade_aligned_realloc(void* ptr, std::size_t size, std::size_t =
   if (ptr == 0) return handmade_aligned_malloc(size);
   void *original = *(reinterpret_cast<void**>(ptr) - 1);
   std::ptrdiff_t previous_offset = static_cast<char *>(ptr)-static_cast<char *>(original);
-  original = std::realloc(original,size+EIGEN_DEFAULT_ALIGN_BYTES);
+  original = realloc(original,size+EIGEN_DEFAULT_ALIGN_BYTES);
   if (original == 0) return 0;
   void *aligned = reinterpret_cast<void*>((reinterpret_cast<std::size_t>(original) & ~(std::size_t(EIGEN_DEFAULT_ALIGN_BYTES-1))) + EIGEN_DEFAULT_ALIGN_BYTES);
   void *previous_aligned = static_cast<char *>(original)+previous_offset;
   if(aligned!=previous_aligned)
-    std::memmove(aligned, previous_aligned, size);
+    memmove(aligned, previous_aligned, size);
   
   *(reinterpret_cast<void**>(aligned) - 1) = original;
   return aligned;
@@ -156,7 +156,7 @@ EIGEN_DEVICE_FUNC inline void* aligned_malloc(std::size_t size)
 
   void *result;
   #if (EIGEN_DEFAULT_ALIGN_BYTES==0) || EIGEN_MALLOC_ALREADY_ALIGNED
-    result = std::malloc(size);
+    result = malloc(size);
     #if EIGEN_DEFAULT_ALIGN_BYTES==16
     eigen_assert((size<16 || (std::size_t(result)%16)==0) && "System's malloc returned an unaligned pointer. Compile with EIGEN_MALLOC_ALREADY_ALIGNED=0 to fallback to handmade alignd memory allocator.");
     #endif
@@ -174,7 +174,7 @@ EIGEN_DEVICE_FUNC inline void* aligned_malloc(std::size_t size)
 EIGEN_DEVICE_FUNC inline void aligned_free(void *ptr)
 {
   #if (EIGEN_DEFAULT_ALIGN_BYTES==0) || EIGEN_MALLOC_ALREADY_ALIGNED
-    std::free(ptr);
+    free(ptr);
   #else
     handmade_aligned_free(ptr);
   #endif
@@ -218,7 +218,7 @@ template<> EIGEN_DEVICE_FUNC inline void* conditional_aligned_malloc<false>(std:
 {
   check_that_malloc_is_allowed();
 
-  void *result = std::malloc(size);
+  void *result = malloc(size);
   if(!result && size)
     throw_std_bad_alloc();
   return result;
@@ -232,7 +232,7 @@ template<bool Align> EIGEN_DEVICE_FUNC inline void conditional_aligned_free(void
 
 template<> EIGEN_DEVICE_FUNC inline void conditional_aligned_free<false>(void *ptr)
 {
-  std::free(ptr);
+  free(ptr);
 }
 
 template<bool Align> inline void* conditional_aligned_realloc(void* ptr, std::size_t new_size, std::size_t old_size)
@@ -242,7 +242,7 @@ template<bool Align> inline void* conditional_aligned_realloc(void* ptr, std::si
 
 template<> inline void* conditional_aligned_realloc<false>(void* ptr, std::size_t new_size, std::size_t)
 {
-  return std::realloc(ptr, new_size);
+  return realloc(ptr, new_size);
 }
 
 /*****************************************************************************
@@ -499,7 +499,13 @@ template<typename T> struct smart_copy_helper<T,true> {
 
 template<typename T> struct smart_copy_helper<T,false> {
   EIGEN_DEVICE_FUNC static inline void run(const T* start, const T* end, T* target)
-  { std::copy(start, end, target); }
+  {
+#ifndef __AVR__
+    std::copy(start, end, target);
+#else
+    assert(0);
+#endif
+  }
 };
 
 // intelligent memmove. falls back to std::memmove for POD types, uses std::copy otherwise. 
@@ -516,7 +522,7 @@ template<typename T> struct smart_memmove_helper<T,true> {
     IntPtr size = IntPtr(end)-IntPtr(start);
     if(size==0) return;
     eigen_internal_assert(start!=0 && end!=0 && target!=0);
-    std::memmove(target, start, size);
+    memmove(target, start, size);
   }
 };
 
@@ -525,12 +531,20 @@ template<typename T> struct smart_memmove_helper<T,false> {
   { 
     if (UIntPtr(target) < UIntPtr(start))
     {
+#ifndef __AVR__
       std::copy(start, end, target);
+#else
+      assert(0);
+#endif
     }
     else                                 
     {
       std::ptrdiff_t count = (std::ptrdiff_t(end)-std::ptrdiff_t(start)) / sizeof(T);
-      std::copy_backward(start, end, target + count); 
+#ifndef __AVR__
+      std::copy_backward(start, end, target + count);
+#else
+      assert(0);
+#endif
     }
   }
 };
@@ -655,10 +669,10 @@ template<typename T> void swap(scoped_array<T> &a,scoped_array<T> &b)
 
 #if EIGEN_MAX_ALIGN_BYTES!=0
   #define EIGEN_MAKE_ALIGNED_OPERATOR_NEW_NOTHROW(NeedsToAlign) \
-      void* operator new(std::size_t size, const std::nothrow_t&) EIGEN_NO_THROW { \
-        EIGEN_TRY { return Eigen::internal::conditional_aligned_malloc<NeedsToAlign>(size); } \
-        EIGEN_CATCH (...) { return 0; } \
-      }
+//      void* operator new(std::size_t size, const std::nothrow_t&) EIGEN_NO_THROW { \
+//        EIGEN_TRY { return Eigen::internal::conditional_aligned_malloc<NeedsToAlign>(size); } \
+//        EIGEN_CATCH (...) { return 0; } \
+//      }
   #define EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(NeedsToAlign) \
       void *operator new(std::size_t size) { \
         return Eigen::internal::conditional_aligned_malloc<NeedsToAlign>(size); \
@@ -673,16 +687,16 @@ template<typename T> void swap(scoped_array<T> &a,scoped_array<T> &b)
       /* in-place new and delete. since (at least afaik) there is no actual   */ \
       /* memory allocated we can safely let the default implementation handle */ \
       /* this particular case. */ \
-      static void *operator new(std::size_t size, void *ptr) { return ::operator new(size,ptr); } \
-      static void *operator new[](std::size_t size, void* ptr) { return ::operator new[](size,ptr); } \
-      void operator delete(void * memory, void *ptr) EIGEN_NO_THROW { return ::operator delete(memory,ptr); } \
-      void operator delete[](void * memory, void *ptr) EIGEN_NO_THROW { return ::operator delete[](memory,ptr); } \
+//      static void *operator new(std::size_t size, void *ptr) { return ::operator new(size,ptr); } \
+//      static void *operator new[](std::size_t size, void* ptr) { return ::operator new[](size,ptr); } \
+//      void operator delete(void * memory, void *ptr) EIGEN_NO_THROW { return ::operator delete(memory,ptr); } \
+//      void operator delete[](void * memory, void *ptr) EIGEN_NO_THROW { return ::operator delete[](memory,ptr); } \
       /* nothrow-new (returns zero instead of std::bad_alloc) */ \
-      EIGEN_MAKE_ALIGNED_OPERATOR_NEW_NOTHROW(NeedsToAlign) \
-      void operator delete(void *ptr, const std::nothrow_t&) EIGEN_NO_THROW { \
-        Eigen::internal::conditional_aligned_free<NeedsToAlign>(ptr); \
-      } \
-      typedef void eigen_aligned_operator_new_marker_type;
+//      EIGEN_MAKE_ALIGNED_OPERATOR_NEW_NOTHROW(NeedsToAlign) \
+//      void operator delete(void *ptr, const std::nothrow_t&) EIGEN_NO_THROW { \
+//        Eigen::internal::conditional_aligned_free<NeedsToAlign>(ptr); \
+//      } \
+//      typedef void eigen_aligned_operator_new_marker_type;
 #else
   #define EIGEN_MAKE_ALIGNED_OPERATOR_NEW_IF(NeedsToAlign)
 #endif
@@ -709,6 +723,12 @@ template<typename T> void swap(scoped_array<T> &a,scoped_array<T> &b)
 *
 * \sa \blank \ref TopicStlContainers.
 */
+#ifdef __AVR__
+template<class T>
+class aligned_allocator
+{
+};
+#else
 template<class T>
 class aligned_allocator : public std::allocator<T>
 {
@@ -747,6 +767,7 @@ public:
     internal::aligned_free(p);
   }
 };
+#endif
 
 //---------- Cache sizes ----------
 
@@ -967,7 +988,7 @@ inline int queryTopLevelCacheSize()
 {
   int l1, l2(-1), l3(-1);
   queryCacheSizes(l1,l2,l3);
-  return (std::max)(l2,l3);
+  return l2 > l3 ? l2: l3;
 }
 
 } // end namespace internal

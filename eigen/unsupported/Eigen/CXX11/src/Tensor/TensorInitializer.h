@@ -22,7 +22,7 @@ namespace Eigen {
   * \brief Helper template to initialize Tensors from std::initializer_lists.
   */
 namespace internal {
-
+#ifndef __AVR__
 template <typename Derived, int N>
 struct Initializer {
   typedef std::initializer_list<
@@ -73,7 +73,7 @@ void initialize_tensor(TensorEvaluator<Derived, DefaultDevice>& tensor,
   Eigen::array<typename traits<Derived>::Index, traits<Derived>::NumDimensions> indices;
   Initializer<Derived, traits<Derived>::NumDimensions>::run(tensor, &indices, vals);
 }
-
+#endif
 }  // namespace internal
 }  // namespace Eigen
 

@@ -10,28 +10,46 @@
 #ifndef EIGEN_NUMTRAITS_H
 #define EIGEN_NUMTRAITS_H
 
+#include <assert.h>
+
 namespace Eigen {
 
 namespace internal {
 
 // default implementation of digits10(), based on numeric_limits if specialized,
 // 0 for integer types, and log10(epsilon()) otherwise.
+#ifndef __AVR__
 template< typename T,
           bool use_numeric_limits = std::numeric_limits<T>::is_specialized,
           bool is_integer = NumTraits<T>::IsInteger>
+#else
+template< typename T, bool use_numeric_limits = false, bool is_integer = true>
+#endif
 struct default_digits10_impl
 {
-  static int run() { return std::numeric_limits<T>::digits10; }
+  static int run()
+  {
+#ifndef __AVR__
+    return std::numeric_limits<T>::digits10;
+#else
+    assert(0);
+#endif
+  }
 };
 
 template<typename T>
 struct default_digits10_impl<T,false,false> // Floating point
 {
   static int run() {
+#ifndef __AVR__
     using std::log10;
     using std::ceil;
     typedef typename NumTraits<T>::Real Real;
     return int(ceil(-log10(NumTraits<Real>::epsilon())));
+#else
+    assert(0);
+#endif
+
   }
 };
 
@@ -87,6 +105,7 @@ struct default_digits10_impl<T,false,true> // Integer
 
 template<typename T> struct GenericNumTraits
 {
+#ifndef __AVR__
   enum {
     IsInteger = std::numeric_limits<T>::is_integer,
     IsSigned = std::numeric_limits<T>::is_signed,
@@ -96,6 +115,17 @@ template<typename T> struct GenericNumTraits
     AddCost = 1,
     MulCost = 1
   };
+#else
+  enum {
+    IsInteger = false,
+    IsSigned = true,
+    IsComplex = 0,
+    RequireInitialization = false,
+    ReadCost = 1,
+    AddCost = 1,
+    MulCost = 1
+  };
+#endif
 
   typedef T Real;
   typedef typename internal::conditional<
@@ -109,7 +139,11 @@ template<typename T> struct GenericNumTraits
   EIGEN_DEVICE_FUNC
   static inline Real epsilon()
   {
+#ifndef __AVR__
     return numext::numeric_limits<T>::epsilon();
+#else
+    assert(0);
+#endif
   }
 
   EIGEN_DEVICE_FUNC
@@ -128,22 +162,38 @@ template<typename T> struct GenericNumTraits
 
   EIGEN_DEVICE_FUNC
   static inline T highest() {
+#ifndef __AVR__
     return (numext::numeric_limits<T>::max)();
+#else
+    assert(0);
+#endif
   }
 
   EIGEN_DEVICE_FUNC
   static inline T lowest()  {
+#ifndef __AVR__
     return IsInteger ? (numext::numeric_limits<T>::min)() : (-(numext::numeric_limits<T>::max)());
+#else
+    assert(0);
+#endif
   }
 
   EIGEN_DEVICE_FUNC
   static inline T infinity() {
+#ifndef __AVR__
     return numext::numeric_limits<T>::infinity();
+#else
+    assert(0);
+#endif
   }
 
   EIGEN_DEVICE_FUNC
   static inline T quiet_NaN() {
+#ifndef __AVR__
     return numext::numeric_limits<T>::quiet_NaN();
+#else
+    assert(0);
+#endif
   }
 };
 

@@ -115,7 +115,9 @@ typedef unsigned __int64 uint64_t;
 #include "src/Tensor/TensorContractionCuda.h"
 #include "src/Tensor/TensorConversion.h"
 #include "src/Tensor/TensorConvolution.h"
+#ifndef __AVR__
 #include "src/Tensor/TensorFFT.h"
+#endif
 #include "src/Tensor/TensorPatch.h"
 #include "src/Tensor/TensorImagePatch.h"
 #include "src/Tensor/TensorVolumePatch.h"
@@ -145,7 +147,9 @@ typedef unsigned __int64 uint64_t;
 #include "src/Tensor/TensorMap.h"
 #include "src/Tensor/TensorRef.h"
 
+#ifndef __AVR__
 #include "src/Tensor/TensorIO.h"
+#endif
 
 #include <Eigen/src/Core/util/ReenableStupidWarnings.h>
 

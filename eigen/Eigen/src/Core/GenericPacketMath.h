@@ -187,7 +187,7 @@ pmax(const Packet& a,
 
 /** \internal \returns the absolute value of \a a */
 template<typename Packet> EIGEN_DEVICE_FUNC inline Packet
-pabs(const Packet& a) { using std::abs; return abs(a); }
+pabs(const Packet& a) { return abs(a); }
 
 /** \internal \returns the phase angle of \a a */
 template<typename Packet> EIGEN_DEVICE_FUNC inline Packet
@@ -363,47 +363,47 @@ template<typename Packet> EIGEN_DEVICE_FUNC inline Packet pcplxflip(const Packet
 
 /** \internal \returns the sine of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet psin(const Packet& a) { using std::sin; return sin(a); }
+Packet psin(const Packet& a) { return sin(a); }
 
 /** \internal \returns the cosine of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet pcos(const Packet& a) { using std::cos; return cos(a); }
+Packet pcos(const Packet& a) { return cos(a); }
 
 /** \internal \returns the tan of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet ptan(const Packet& a) { using std::tan; return tan(a); }
+Packet ptan(const Packet& a) { return tan(a); }
 
 /** \internal \returns the arc sine of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet pasin(const Packet& a) { using std::asin; return asin(a); }
+Packet pasin(const Packet& a) { return asin(a); }
 
 /** \internal \returns the arc cosine of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet pacos(const Packet& a) { using std::acos; return acos(a); }
+Packet pacos(const Packet& a) { return acos(a); }
 
 /** \internal \returns the arc tangent of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet patan(const Packet& a) { using std::atan; return atan(a); }
+Packet patan(const Packet& a) { return atan(a); }
 
 /** \internal \returns the hyperbolic sine of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet psinh(const Packet& a) { using std::sinh; return sinh(a); }
+Packet psinh(const Packet& a) { return sinh(a); }
 
 /** \internal \returns the hyperbolic cosine of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet pcosh(const Packet& a) { using std::cosh; return cosh(a); }
+Packet pcosh(const Packet& a) { return cosh(a); }
 
 /** \internal \returns the hyperbolic tan of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet ptanh(const Packet& a) { using std::tanh; return tanh(a); }
+Packet ptanh(const Packet& a) { return tanh(a); }
 
 /** \internal \returns the exp of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet pexp(const Packet& a) { using std::exp; return exp(a); }
+Packet pexp(const Packet& a) { return exp(a); }
 
 /** \internal \returns the log of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet plog(const Packet& a) { using std::log; return log(a); }
+Packet plog(const Packet& a) { return log(a); }
 
 /** \internal \returns the log1p of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
@@ -411,11 +411,11 @@ Packet plog1p(const Packet& a) { return numext::log1p(a); }
 
 /** \internal \returns the log10 of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet plog10(const Packet& a) { using std::log10; return log10(a); }
+Packet plog10(const Packet& a) { return log10(a); }
 
 /** \internal \returns the square-root of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
-Packet psqrt(const Packet& a) { using std::sqrt; return sqrt(a); }
+Packet psqrt(const Packet& a) { return sqrt(a); }
 
 /** \internal \returns the reciprocal square-root of \a a (coeff-wise) */
 template<typename Packet> EIGEN_DECLARE_FUNCTION_ALLOWING_MULTIPLE_DEFINITIONS
@@ -522,13 +522,13 @@ inline void palign(PacketType& first, const PacketType& second)
 
 // Eigen+CUDA does not support complexes.
 #ifndef __CUDACC__
-
+#ifndef __AVR__
 template<> inline std::complex<float> pmul(const std::complex<float>& a, const std::complex<float>& b)
 { return std::complex<float>(real(a)*real(b) - imag(a)*imag(b), imag(a)*real(b) + real(a)*imag(b)); }
 
 template<> inline std::complex<double> pmul(const std::complex<double>& a, const std::complex<double>& b)
 { return std::complex<double>(real(a)*real(b) - imag(a)*imag(b), imag(a)*real(b) + real(a)*imag(b)); }
-
+#endif
 #endif
 
 

@@ -167,7 +167,7 @@ EIGEN_DONT_INLINE void general_matrix_vector_product<Index,LhsScalar,LhsMapper,C
     }
     else
     {
-      skipColumns = (std::min)(skipColumns,cols);
+      skipColumns = skipColumns < cols? skipColumns: cols;
       // note that the skiped columns are processed later.
     }
 
@@ -441,7 +441,8 @@ EIGEN_DONT_INLINE void general_matrix_vector_product<Index,LhsScalar,LhsMapper,R
     }
     else
     {
-      skipRows = (std::min)(skipRows,Index(rows));
+      Index index = Index(rows);
+      skipRows = skipRows < index ? skipRows: index;
       // note that the skiped columns are processed later.
     }
     /*    eigen_internal_assert(  alignmentPattern==NoneAligned

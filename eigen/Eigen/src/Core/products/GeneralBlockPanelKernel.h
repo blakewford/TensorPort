@@ -923,10 +923,12 @@ void gebp_kernel<LhsScalar,RhsScalar,Index,DataMapper,mr,nr,ConjugateLhs,Conjuga
       // The max(1, ...) here is needed because we may be using blocking params larger than what our known l1 cache size
       // suggests we should be using: either because our known l1 cache size is inaccurate (e.g. on Android, we can only guess),
       // or because we are testing specific blocking sizes.
-      const Index actual_panel_rows = (3*LhsProgress) * std::max<Index>(1,( (l1 - sizeof(ResScalar)*mr*nr - depth*nr*sizeof(RhsScalar)) / (depth * sizeof(LhsScalar) * 3*LhsProgress) ));
+      Index value = (l1 - sizeof(ResScalar)*mr*nr - depth*nr*sizeof(RhsScalar)) / (depth * sizeof(LhsScalar) * 3*LhsProgress);
+      const Index actual_panel_rows = (3*LhsProgress) * (value < 1 ? 1: value);
       for(Index i1=0; i1<peeled_mc3; i1+=actual_panel_rows)
       {
-        const Index actual_panel_end = (std::min)(i1+actual_panel_rows, peeled_mc3);
+        Index value = i1+actual_panel_rows;
+        const Index actual_panel_end = value < peeled_mc3 ? value: peeled_mc3;
         for(Index j2=0; j2<packet_cols4; j2+=nr)
         {
           for(Index i=i1; i<actual_panel_end; i+=3*LhsProgress)
@@ -1155,11 +1157,12 @@ void gebp_kernel<LhsScalar,RhsScalar,Index,DataMapper,mr,nr,ConjugateLhs,Conjuga
       // The max(1, ...) here is needed because we may be using blocking params larger than what our known l1 cache size
       // suggests we should be using: either because our known l1 cache size is inaccurate (e.g. on Android, we can only guess),
       // or because we are testing specific blocking sizes.
-      Index actual_panel_rows = (2*LhsProgress) * std::max<Index>(1,( (l1 - sizeof(ResScalar)*mr*nr - depth*nr*sizeof(RhsScalar)) / (depth * sizeof(LhsScalar) * 2*LhsProgress) ));
-
+      Index value = ( (l1 - sizeof(ResScalar)*mr*nr - depth*nr*sizeof(RhsScalar)) / (depth * sizeof(LhsScalar) * 2*LhsProgress) );
+      Index actual_panel_rows = actual_panel_rows = (2*LhsProgress) * (value < 1 ? 1: value);
       for(Index i1=peeled_mc3; i1<peeled_mc2; i1+=actual_panel_rows)
       {
-        Index actual_panel_end = (std::min)(i1+actual_panel_rows, peeled_mc2);
+        Index value = i1+actual_panel_rows;
+        Index actual_panel_end = value < peeled_mc2 ? value: peeled_mc2;
         for(Index j2=0; j2<packet_cols4; j2+=nr)
         {
           for(Index i=i1; i<actual_panel_end; i+=2*LhsProgress)
@@ -1537,7 +1540,8 @@ void gebp_kernel<LhsScalar,RhsScalar,Index,DataMapper,mr,nr,ConjugateLhs,Conjuga
             straits.initAcc(C2);
             straits.initAcc(C3);
 
-            const Index spk   = (std::max)(1,SwappedTraits::LhsProgress/4);
+            float value = SwappedTraits::LhsProgress/4;
+            const Index spk   =  value < 1.0f ? 1: value;
             const Index endk  = (depth/spk)*spk;
             const Index endk4 = (depth/(spk*4))*(spk*4);
 

@@ -285,7 +285,7 @@ protected:
   * upcoming next STL generation (using a templated result member).
   * If none of these members is provided, then the type of the first argument is returned. FIXME, that behavior is a pretty bad hack.
   */
-#if EIGEN_HAS_STD_RESULT_OF
+#if EIGEN_HAS_STD_RESULT_OF && !defined(__AVR__)
 template<typename T> struct result_of {
   typedef typename std::result_of<T>::type type1;
   typedef typename remove_all<type1>::type type;
@@ -468,11 +468,17 @@ namespace numext {
 #if defined(__CUDA_ARCH__)
 template<typename T> EIGEN_DEVICE_FUNC   void swap(T &a, T &b) { T tmp = b; b = a; a = tmp; }
 #else
-template<typename T> EIGEN_STRONG_INLINE void swap(T &a, T &b) { std::swap(a,b); }
+template<typename T> EIGEN_STRONG_INLINE void swap(T &a, T &b)
+{
+  T c = a;
+  a = b;
+  b = c;
+}
 #endif
 
 #if defined(__CUDA_ARCH__)
 using internal::device::numeric_limits;
+#elif defined(__AVR__)
 #else
 using std::numeric_limits;
 #endif

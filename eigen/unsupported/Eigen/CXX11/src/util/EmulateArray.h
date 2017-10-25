@@ -15,7 +15,7 @@
 // The array class is only available starting with cxx11. Emulate our own here
 // if needed. Beware, msvc still doesn't advertise itself as a c++11 compiler!
 // Moreover, CUDA doesn't support the STL containers, so we use our own instead.
-#if (__cplusplus <= 199711L && EIGEN_COMP_MSVC < 1900) || defined(__CUDACC__) || defined(EIGEN_AVOID_STL_ARRAY)
+//#if (__cplusplus <= 199711L && EIGEN_COMP_MSVC < 1900) || defined(__CUDACC__) || defined(EIGEN_AVOID_STL_ARRAY)
 
 namespace Eigen {
 template <typename T, size_t n> class array {
@@ -118,11 +118,13 @@ template <typename T, size_t n> class array {
   }
 
 #if EIGEN_HAS_VARIADIC_TEMPLATES
+#ifndef __AVR__
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE array(std::initializer_list<T> l) {
     eigen_assert(l.size() == n);
     internal::smart_copy(l.begin(), l.end(), values);
   }
+#endif
 #endif
 };
 
@@ -166,13 +168,13 @@ template <typename T> class array<T, 0> {
 
   EIGEN_DEVICE_FUNC
   EIGEN_STRONG_INLINE array() : dummy() { }
-
+#ifndef __AVR__
 #if EIGEN_HAS_VARIADIC_TEMPLATES
   EIGEN_DEVICE_FUNC array(std::initializer_list<T> l) : dummy() {
     eigen_assert(l.size() == 0);
   }
 #endif
-
+#endif
  private:
   T dummy;
 };
@@ -220,7 +222,7 @@ template<class T, std::size_t N> struct array_size<const array<T,N>& > {
 }  // end namespace internal
 }  // end namespace Eigen
 
-#else
+#if 0
 
 // The compiler supports c++11, and we're not targetting cuda: use std::array as Eigen::array
 #include <array>

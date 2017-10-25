@@ -89,12 +89,16 @@ class Tensor : public TensorBase<Tensor<Scalar_, NumIndices_, Options_, IndexTyp
 #ifdef EIGEN_HAS_SFINAE
     template<typename CustomIndices>
     struct isOfNormalIndex{
+#ifndef __AVR__
       static const bool is_array = internal::is_base_of<array<Index, NumIndices>, CustomIndices>::value;
+#else
+      static const bool is_array = true;
+#endif
       static const bool is_int = NumTraits<CustomIndices>::IsInteger;
       static const bool value = is_array | is_int;
     };
 #endif
-
+#ifndef __AVR__
   public:
     // Metadata
     EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE Index                         rank()                   const { return NumIndices; }
@@ -520,6 +524,7 @@ class Tensor : public TensorBase<Tensor<Scalar_, NumIndices_, Options_, IndexTyp
         return m_storage.dimensions().IndexOfColMajor(indices);
       }
     }
+#endif
 };
 
 } // end namespace Eigen

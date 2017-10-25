@@ -853,6 +853,7 @@ class TensorBase : public TensorBase<Derived, ReadOnlyAccessors> {
       return derived() = this->template random<RandomGenerator>();
     }
 
+#if 0
 #if EIGEN_HAS_VARIADIC_TEMPLATES
     EIGEN_DEVICE_FUNC
     EIGEN_STRONG_INLINE Derived& setValues(
@@ -862,7 +863,7 @@ class TensorBase : public TensorBase<Derived, ReadOnlyAccessors> {
       return derived();
     }
 #endif  // EIGEN_HAS_VARIADIC_TEMPLATES
-
+#endif
     template<typename OtherDerived> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
     Derived& operator+=(const OtherDerived& other) {
       return derived() = derived() + other.derived();

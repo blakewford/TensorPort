@@ -78,7 +78,7 @@ T RandomToTypeUniform(uint64_t* state) {
   return static_cast<T>(rnd);
 }
 
-
+#ifndef __AVR__
 template <> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
 Eigen::half RandomToTypeUniform<Eigen::half>(uint64_t* state) {
   Eigen::half result;
@@ -90,7 +90,7 @@ Eigen::half RandomToTypeUniform<Eigen::half>(uint64_t* state) {
   // Return the final result
   return result - Eigen::half(1.0f);
 }
-
+#endif
 
 template <> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
 float RandomToTypeUniform<float>(uint64_t* state) {
@@ -127,7 +127,7 @@ double RandomToTypeUniform<double>(uint64_t* state) {
   // Return the final result
   return result.dp - 1.0;
 }
-
+#ifndef __AVR__
 template <> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
 std::complex<float> RandomToTypeUniform<std::complex<float> >(uint64_t* state) {
   return std::complex<float>(RandomToTypeUniform<float>(state),
@@ -138,7 +138,7 @@ std::complex<double> RandomToTypeUniform<std::complex<double> >(uint64_t* state)
   return std::complex<double>(RandomToTypeUniform<double>(state),
                               RandomToTypeUniform<double>(state));
 }
-
+#endif
 template <typename T> class UniformRandomGenerator {
  public:
   static const bool PacketAccess = true;
@@ -206,7 +206,7 @@ T RandomToTypeNormal(uint64_t* state) {
 
   return v/u;
 }
-
+#ifndef __AVR__
 template <> EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE
 std::complex<float> RandomToTypeNormal<std::complex<float> >(uint64_t* state) {
   return std::complex<float>(RandomToTypeNormal<float>(state),
@@ -218,7 +218,7 @@ std::complex<double> RandomToTypeNormal<std::complex<double> >(uint64_t* state) 
                               RandomToTypeNormal<double>(state));
 }
 
-
+#endif
 template <typename T> class NormalRandomGenerator {
  public:
   static const bool PacketAccess = true;

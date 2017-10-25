@@ -364,14 +364,14 @@ template<typename FirstType, typename... OtherTypes> struct array_size<IndexList
 template<typename FirstType, typename... OtherTypes> struct array_size<const IndexList<FirstType, OtherTypes...> > {
   static const size_t value = array_size<IndexTuple<FirstType, OtherTypes...> >::value;
 };
-
+#ifndef __AVR__
 template<typename FirstType, typename... OtherTypes> struct array_size<IndexPairList<FirstType, OtherTypes...> > {
   static const size_t value = std::tuple_size<std::tuple<FirstType, OtherTypes...> >::value;
 };
 template<typename FirstType, typename... OtherTypes> struct array_size<const IndexPairList<FirstType, OtherTypes...> > {
   static const size_t value = std::tuple_size<std::tuple<FirstType, OtherTypes...> >::value;
 };
-
+#endif
 template<DenseIndex N, typename FirstType, typename... OtherTypes> EIGEN_DEVICE_FUNC constexpr DenseIndex array_get(IndexList<FirstType, OtherTypes...>& a) {
   return IndexTupleExtractor<N, FirstType, OtherTypes...>::get_val(a);
 }

@@ -14,6 +14,7 @@
 // TODO this should better be moved to NumTraits
 #define EIGEN_PI 3.141592653589793238462643383279502884197169399375105820974944592307816406L
 
+#include <assert.h>
 
 namespace Eigen {
 
@@ -90,7 +91,7 @@ struct real_default_impl<Scalar,true>
   EIGEN_DEVICE_FUNC
   static inline RealScalar run(const Scalar& x)
   {
-    using std::real;
+    //using std::real;
     return real(x);
   }
 };
@@ -138,7 +139,7 @@ struct imag_default_impl<Scalar,true>
   EIGEN_DEVICE_FUNC
   static inline RealScalar run(const Scalar& x)
   {
-    using std::imag;
+    //using std::imag;
     return imag(x);
   }
 };
@@ -254,7 +255,7 @@ struct conj_impl<Scalar,true>
   EIGEN_DEVICE_FUNC
   static inline Scalar run(const Scalar& x)
   {
-    using std::conj;
+    //using std::conj;
     return conj(x);
   }
 };
@@ -581,7 +582,7 @@ struct random_default_impl<Scalar, false, false>
 {
   static inline Scalar run(const Scalar& x, const Scalar& y)
   {
-    return x + (y-x) * Scalar(std::rand()) / Scalar(RAND_MAX);
+    return x + (y-x) * Scalar(rand()) / Scalar(RAND_MAX);
   }
   static inline Scalar run()
   {
@@ -654,7 +655,7 @@ struct random_default_impl<Scalar, false, true>
     if(range<RAND_MAX) divisor = (std::size_t(RAND_MAX)+1)/(range+1);
     else               multiplier = 1 + range/(std::size_t(RAND_MAX)+1);
     do {
-      offset = (std::size_t(std::rand()) * multiplier) / divisor;
+      offset = (std::size_t(rand()) * multiplier) / divisor;
     } while (offset > range);
     return Scalar(ScalarX(x) + offset);
   }
@@ -669,7 +670,7 @@ struct random_default_impl<Scalar, false, true>
            shift = EIGEN_PLAIN_ENUM_MAX(0, int(rand_bits) - int(scalar_bits)),
            offset = NumTraits<Scalar>::IsSigned ? (1 << (EIGEN_PLAIN_ENUM_MIN(rand_bits,scalar_bits)-1)) : 0
     };
-    return Scalar((std::rand() >> shift) - offset);
+    return Scalar((rand() >> shift) - offset);
 #endif
   }
 };
@@ -832,7 +833,7 @@ EIGEN_DEVICE_FUNC
 EIGEN_ALWAYS_INLINE T mini(const T& x, const T& y)
 {
   EIGEN_USING_STD_MATH(min);
-  return min EIGEN_NOT_A_MACRO (x,y);
+  return x < y ? x: y;
 }
 
 template<typename T>
@@ -840,7 +841,7 @@ EIGEN_DEVICE_FUNC
 EIGEN_ALWAYS_INLINE T maxi(const T& x, const T& y)
 {
   EIGEN_USING_STD_MATH(max);
-  return max EIGEN_NOT_A_MACRO (x,y);
+  return x > y ? x: y;
 }
 #else
 template<typename T>

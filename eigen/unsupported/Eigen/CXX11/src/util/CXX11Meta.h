@@ -398,7 +398,7 @@ EIGEN_DEVICE_FUNC constexpr inline auto array_prod(const array<T, N>& arr) -> de
 {
   return array_reduce<product_op, T, N>(arr, static_cast<T>(1));
 }
-
+#ifndef __AVR__
 template<typename t>
 EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE t array_prod(const std::vector<t>& a) {
   eigen_assert(a.size() > 0);
@@ -406,7 +406,7 @@ EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE t array_prod(const std::vector<t>& a) {
   for (size_t i = 0; i < a.size(); ++i) { prod *= a[i]; }
   return prod;
 }
-
+#endif
 /* zip an array */
 
 template<typename Op, typename A, typename B, std::size_t N, int... n>
