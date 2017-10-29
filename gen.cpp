@@ -49,6 +49,7 @@ int main(int argc, char** argv)
     srand(time(NULL));
 
     int32_t data = 0;
+    bool both = false;
     bool forPort = false;
     bool forProduct = false;
     if(argc == 1)
@@ -71,56 +72,78 @@ int main(int argc, char** argv)
         forProduct = true;
         printf("%s", pythonHeader);
     }
+    else if(!strcmp(argv[2], "both"))
+    {
+        both = true;
+        printf("%s", pythonHeader);
+    }
     else if(argc != 1)
     {
         printf("Invalid target type: %s\n", argv[2]);
         return -1;
     }
 
-    if(forPort || forProduct)
+    if(forPort || forProduct || both)
     {
         data = atoi(argv[1]);
     }
 
     while(data--)
     {
+        int32_t targets = both ? 2: 1;
         const int32_t rows = (rand()%BUFFER_SIZE) + 1;
         const int32_t columns = (rand()%BUFFER_SIZE) + 1;
+        const int32_t columns2 = (rand()%BUFFER_SIZE) + 1;
 
-        if(forPort)
+        if(both)
         {
-            printf("./MatMul \"");
+            forPort = true;
+            forProduct = false;
         }
-        if(forProduct)
+
+        while(targets--)
         {
-            printf("with tf.device('/cpu:0'):\n  a = tf.constant(");
-        }
-        printDataset(rows, columns, "a");
-        if(forPort)
-        {
-            printf("\" \"");
-        }
-        else if(forProduct)
-        {
-            printf(")\n  b = tf.constant(");
-        }
-        else
-        {
-            printf("\n");
-        }
-        printDataset(columns, (rand()%BUFFER_SIZE) + 1, "b");
-        if(forPort)
-        {
-            printf("\"\n");
-        }
-        else if(forProduct)
-        {
-            printf(")");
-            printf("\n%s\n", pythonFooter);
-        }
-        else
-        {
-            printf("\n");
+            if(forPort)
+            {
+               printf("./MatMul \"");
+            }
+            if(forProduct)
+            {
+                printf("with tf.device('/cpu:0'):\n  a = tf.constant(");
+            }
+            printDataset(rows, columns, "a");
+            if(forPort)
+            {
+                printf("\" \"");
+            }
+            else if(forProduct)
+            {
+                printf(")\n  b = tf.constant(");
+            }
+            else
+            {
+                printf("\n");
+            }
+            printDataset(columns, columns2, "b");
+            if(forPort)
+            {
+                printf("\"\n");
+            }
+            else if(forProduct)
+            {
+                printf(")");
+                printf("\n%s\n", pythonFooter);
+            }
+            else
+            {
+                printf("\n");
+            }
+
+            if(both)
+            {
+                forPort = false;
+                forProduct = true;
+            }
         }
     }
 
