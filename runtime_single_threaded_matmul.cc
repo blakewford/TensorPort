@@ -13,10 +13,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-#include <stdio.h>
-#include <unistd.h>
-#include <unsupported/Eigen/CXX11/Tensor>
 #include "tensorflow/compiler/xla/service/cpu/runtime_single_threaded_matmul.h"
+
+#include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
+#include "tensorflow/compiler/xla/service/cpu/runtime_matvec.h"
+#include "tensorflow/core/platform/types.h"
 
 using tensorflow::int32;
 using tensorflow::int64;
@@ -28,9 +29,15 @@ void MatMul(const void* run_options_ptr, T* out, T* lhs, T* rhs, int64 m,
             int64 n, int64 k, int32 transpose_lhs, int32 transpose_rhs) {
   int64 lhs_rows = m;
   int64 lhs_cols = k;
+  if (transpose_lhs) {
+    std::swap(lhs_rows, lhs_cols);
+  }
 
   int64 rhs_rows = k;
   int64 rhs_cols = n;
+  if (transpose_rhs) {
+    std::swap(rhs_rows, rhs_cols);
+  }
 
   const Eigen::TensorMap<Eigen::Tensor<const T, 2>, Eigen::Aligned> A(
       lhs, lhs_rows, lhs_cols);
@@ -39,8 +46,10 @@ void MatMul(const void* run_options_ptr, T* out, T* lhs, T* rhs, int64 m,
   Eigen::TensorMap<Eigen::Tensor<T, 2>, Eigen::Aligned> C(out, m, n);
 
   typedef typename Eigen::Tensor<T, 2>::DimensionPair DimPair;
+  int lhs_contract_dim = transpose_lhs ? 0 : 1;
+  int rhs_contract_dim = transpose_rhs ? 1 : 0;
   const Eigen::array<DimPair, 1> dims(
-      {DimPair(1, 0)});
+      {DimPair(lhs_contract_dim, rhs_contract_dim)});
 
   // Matrix multiply is a special case of the "contract" operation where
   // the contraction is performed along dimension 1 of the lhs and dimension
@@ -50,25 +59,24 @@ void MatMul(const void* run_options_ptr, T* out, T* lhs, T* rhs, int64 m,
 
 }  // namespace
 
-int main(int argc, char** argv)
-{
-//  a = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[2, 3], name='a')
-//  b = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[3, 2], name='b')
+void __xla_cpu_runtime_EigenSingleThreadedMatMulF32(
+    const void* run_options_ptr, float* out, float* lhs, float* rhs, int64 m,
+    int64 n, int64 k, int32 transpose_lhs, int32 transpose_rhs) {
+  if (m == 1 || n == 1) {
+    xla::EigenMatVecF32(out, lhs, rhs, m, n, k, transpose_lhs, transpose_rhs);
+  } else {
+    MatMul<float>(run_options_ptr, out, lhs, rhs, m, n, k, transpose_lhs,
+                  transpose_rhs);
+  }
+}
 
-    float A[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-    float B[] = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
-    float C[sizeof(A)/sizeof(float)];
-
-    MatMul(NULL, C, A, B, 2, 2, 3, false, false);
-
-    char buffer[16];
-    int32_t count = 2*2;
-    while(count--)
-    {
-        memset(buffer, '\0', 16);
-        sprintf(buffer, "%f\n", C[count]);
-        write(1, buffer, strlen(buffer));
-    }
-
-    return 0;
+void __xla_cpu_runtime_EigenSingleThreadedMatMulF64(
+    const void* run_options_ptr, double* out, double* lhs, double* rhs, int64 m,
+    int64 n, int64 k, int32 transpose_lhs, int32 transpose_rhs) {
+  if (m == 1 || n == 1) {
+    xla::EigenMatVecF64(out, lhs, rhs, m, n, k, transpose_lhs, transpose_rhs);
+  } else {
+    MatMul<double>(run_options_ptr, out, lhs, rhs, m, n, k, transpose_lhs,
+                   transpose_rhs);
+  }
 }
