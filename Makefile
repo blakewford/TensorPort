@@ -5,5 +5,8 @@ EXTRA:=
 tensor:
 	$(CC) $(DEBUG) -std=c++11 main.cpp -o MatMul -I/home/blakewford/tensorflow -Ieigen $(EXTRA) -w
 
+gen: gen.cpp
+	$(CC) gen.cpp -o gen
+
 clean: MatMul
 	rm $<
