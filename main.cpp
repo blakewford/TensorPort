@@ -65,25 +65,25 @@ void TensorPort(const param& A, const param& B, float* C)
     MatMul(NULL, C, (float*)A.value, (float*)B.value, A.shape[0], B.shape[1], A.shape[1], false, false);
 
     int32_t count = 0;
-    const int32_t rows = A.shape[0];
-    int32_t columns = B.shape[1];
+    int32_t rows = A.shape[0];
+    const int32_t columns = B.shape[1];
 
-    int32_t currentRow = rows;
+    int32_t currentColumn = columns;
     char buffer[BUFFER_SIZE];
     write(1, "[[ ", 3);
-    while(columns--)
+    while(rows--)
     {
-        while(currentRow--)
+        while(currentColumn--)
         {
             memset(buffer, '\0', BUFFER_SIZE);
             sprintf(buffer, "%.2f ", C[count++]);
             write(1, buffer, strlen(buffer));
         }
-        if(columns != 0)
+        if(rows != 0)
             write(1, "]\n [ ", 5);
         else
             write(1, "]", 1);      
-        currentRow = rows;
+        currentColumn = columns;
     }
     write(1, "]\n", 2);
 }
