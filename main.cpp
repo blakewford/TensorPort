@@ -33,6 +33,10 @@ namespace std
 //  a = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[2, 3], name='a')
 //  b = tf.constant([1.0, 2.0, 3.0, 4.0, 5.0, 6.0], shape=[3, 2], name='b')
 
+int32_t cachedArgc = 0;
+char argvStorage[1024];
+char* cachedArgv[64];
+
 //  Default parameters
 const char* gDefaults[] = {
     "[1.0, 2.0, 3.0, 4.0, 5.0, 6.0], name='a', shape=[2, 3]",
@@ -56,6 +60,8 @@ struct param
 
 void TensorPort(const param& A, const param& B, float* C)
 {
+    assert(A.shape[1] == B.shape[0]);
+
     MatMul(NULL, C, (float*)A.value, (float*)B.value, A.shape[0], B.shape[1], A.shape[1], false, false);
 
     int32_t count = 0;
@@ -191,10 +197,20 @@ void parseEntry(const char* cursor, param& parameter, int32_t& valueSize, int32_
 
 int main(int argc, char** argv)
 {
+    cachedArgc = argc;
+    char* storagePointer = argvStorage;
+    while(argc--)
+    {
+        cachedArgv[argc] = storagePointer;
+        int32_t length = strlen(argv[argc]);
+        strcat(storagePointer, argv[argc]);
+        storagePointer+=(length+1);
+    }
+
     param A, B;
     int32_t valueSize, shapeSize;
-    parseEntry(gDefaults[0], A, valueSize, shapeSize);
-    parseEntry(gDefaults[1], B, valueSize, shapeSize);
+    parseEntry(cachedArgc > 1 ? cachedArgv[1]: gDefaults[0], A, valueSize, shapeSize);
+    parseEntry(cachedArgc > 2 ? cachedArgv[2]: gDefaults[1], B, valueSize, shapeSize);
 
     float C[valueSize];
 
