@@ -19,9 +19,11 @@ namespace xla
 
 namespace std
 {
-    void swap(long long&, long long&)
+    void swap(long long& A, long long& B)
     {
-        assert(0);
+        long long C = A;
+        A = B;
+        B = C;
     }
 }
 
@@ -62,9 +64,10 @@ void TensorPort(const param& A, const param& B, float* C)
 {
     assert(A.shape[1] == B.shape[0]);
 
-    MatMul(NULL, C, (float*)A.value, (float*)B.value, A.shape[0], B.shape[1], A.shape[1], false, false);
+    MatMul(NULL, C, (float*)A.value, (float*)B.value, A.shape[0], B.shape[1], A.shape[1], true, true);
 
     int32_t count = 0;
+    int32_t index = 0;
     int32_t rows = A.shape[0];
     const int32_t columns = B.shape[1];
 
@@ -76,7 +79,8 @@ void TensorPort(const param& A, const param& B, float* C)
         while(currentColumn--)
         {
             memset(buffer, '\0', BUFFER_SIZE);
-            sprintf(buffer, "%.2f ", C[count++]);
+            sprintf(buffer, "%.2f ", C[index]);
+            index += A.shape[0];
             write(1, buffer, strlen(buffer));
         }
         if(rows != 0)
@@ -84,6 +88,8 @@ void TensorPort(const param& A, const param& B, float* C)
         else
             write(1, "]", 1);      
         currentColumn = columns;
+        count++;
+        index = count;
     }
     write(1, "]\n", 2);
 }
@@ -212,7 +218,7 @@ int main(int argc, char** argv)
     parseEntry(cachedArgc > 1 ? cachedArgv[1]: gDefaults[0], A, valueSize, shapeSize);
     parseEntry(cachedArgc > 2 ? cachedArgv[2]: gDefaults[1], B, valueSize, shapeSize);
 
-    float C[valueSize];
+    float C[(int32_t)(A.shape[0]*B.shape[1])];
 
     TensorPort(A, B, C);
 
