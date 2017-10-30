@@ -15,8 +15,9 @@ sess = tf.Session()\n\
 print(sess.run(c))\n\
 ";
 
-void printDataset(int32_t rows, int32_t columns, const char* name)
+void printDataset(int32_t rows, int32_t columns, float* data, const char* name, bool generateData)
 {
+    int32_t index = 0;
     int32_t rowCount = rows;
     printf("[ ");
     while(rowCount--)
@@ -24,7 +25,11 @@ void printDataset(int32_t rows, int32_t columns, const char* name)
         int32_t count = columns;
         while(count--)
         {
-            printf("%.1f", (float)(rand()%10));
+            if(generateData)
+            {
+                data[index] = (float)(rand()%10);
+            }
+            printf("%.1f", data[index++]);
             if(count != 0)
             {
                 printf(", ");
@@ -95,6 +100,10 @@ int main(int argc, char** argv)
         const int32_t columns = (rand()%BUFFER_SIZE) + 1;
         const int32_t columns2 = (rand()%BUFFER_SIZE) + 1;
 
+        bool generateData = true;
+        float* tempA = new float[rows*columns];
+        float* tempB = new float[columns*columns2];
+
         if(both)
         {
             forPort = true;
@@ -111,7 +120,7 @@ int main(int argc, char** argv)
             {
                 printf("with tf.device('/cpu:0'):\n  a = tf.constant(");
             }
-            printDataset(rows, columns, "a");
+            printDataset(rows, columns, tempA, "a", generateData);
             if(forPort)
             {
                 printf("\" \"");
@@ -124,7 +133,7 @@ int main(int argc, char** argv)
             {
                 printf("\n");
             }
-            printDataset(columns, columns2, "b");
+            printDataset(columns, columns2, tempB, "b", generateData);
             if(forPort)
             {
                 printf("\"\n");
@@ -143,8 +152,12 @@ int main(int argc, char** argv)
             {
                 forPort = false;
                 forProduct = true;
+                generateData = false;
             }
         }
+
+        delete[] tempA;
+        delete[] tempB;
     }
 
     return 0;
