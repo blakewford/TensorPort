@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <sys/sysinfo.h>
 
 namespace xla
 {
@@ -295,6 +296,27 @@ void parseEntry(const char* cursor, param& parameter, int32_t& valueSize, int32_
     }
 }
 
+void* iteration(void* ndx)
+{
+    int32_t loops = 200000; // ~5:20 seconds, ATmega 2560
+    while(loops--)
+    {
+        int i = 0;
+        const int count = sizeof(gDefaults)/sizeof(const char*);
+        while(i < count)
+        {
+            param A, B;
+            int32_t valueSize, shapeSize;
+            parseEntry(gDefaults[i++], A, valueSize, shapeSize);
+            parseEntry(gDefaults[i++], B, valueSize, shapeSize);
+            float C[(int32_t)(A.shape[0]*B.shape[1])];
+            TensorPort(A, B, C);
+        }
+    }
+
+    return nullptr;
+}
+
 int main(int argc, char** argv)
 {
 #ifdef __AVR__
@@ -317,22 +339,11 @@ int main(int argc, char** argv)
     }
 #endif
 
-    param A, B;
-    int32_t valueSize, shapeSize;
+    int processors = get_nprocs();
+    pthread_t thread[processors];
+    pthread_create(&thread[0], nullptr, iteration, nullptr);
 
-    int32_t loops = 200000; // ~5:20 seconds, ATmega 2560
-    while(loops--)
-    {
-        int i = 0;
-        const int count = sizeof(gDefaults)/sizeof(const char*);
-        while(i < count)
-        {
-            parseEntry(gDefaults[i++], A, valueSize, shapeSize);
-            parseEntry(gDefaults[i++], B, valueSize, shapeSize);
-            float C[(int32_t)(A.shape[0]*B.shape[1])];
-            TensorPort(A, B, C);
-        }
-    }
+    pthread_join(thread[0], nullptr);
 
 #ifdef __AVR__
     PORTB = 0x80;
