@@ -308,10 +308,12 @@ void* iteration(void*)
 
     int core = gNextCore.fetch_add(1);
 
+#ifdef __LINUX__
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     CPU_SET(core, &cpuset);
     pthread_setaffinity_np(self, sizeof(cpu_set_t), &cpuset);
+#endif
 
     int32_t loops = 200000; // ~5:20 seconds, ATmega 2560
     while(loops--)
