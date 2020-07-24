@@ -3,7 +3,10 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#ifdef __LINUX__
 #include <sys/sysinfo.h>
+#endif
 
 namespace xla
 {
@@ -317,6 +320,13 @@ void* iteration(void* ndx)
     return nullptr;
 }
 
+#ifndef __LINUX__
+int get_nprocs()
+{
+    return 8;
+}
+#endif
+
 int main(int argc, char** argv)
 {
 #ifdef __AVR__
@@ -339,11 +349,20 @@ int main(int argc, char** argv)
     }
 #endif
 
-    int processors = get_nprocs();
+    const int processors = get_nprocs();
     pthread_t thread[processors];
-    pthread_create(&thread[0], nullptr, iteration, nullptr);
 
-    pthread_join(thread[0], nullptr);
+    int count = processors;
+    while(count--)
+    {
+        pthread_create(&thread[count], nullptr, iteration, nullptr);
+    }
+
+    count = processors;
+    while(count--)
+    {
+        pthread_join(thread[count], nullptr);
+    }
 
 #ifdef __AVR__
     PORTB = 0x80;
