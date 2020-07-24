@@ -167,7 +167,7 @@ void TensorPort(const param& A, const param& B, float* C)
 
     int32_t currentColumn = columns;
     char buffer[BUFFER_SIZE];
-    write(1, "[[ ", 3);
+//    write(1, "[[ ", 3);
     while(rows--)
     {
         while(currentColumn--)
@@ -175,17 +175,17 @@ void TensorPort(const param& A, const param& B, float* C)
             memset(buffer, '\0', BUFFER_SIZE);
             sprintf(buffer, "%.2f ", C[index]);
             index += A.shape[0];
-            write(1, buffer, strlen(buffer));
+//            write(1, buffer, strlen(buffer));
         }
-        if(rows != 0)
-            write(1, "]\n [ ", 5);
-        else
-            write(1, "]", 1);
+//        if(rows != 0)
+//            write(1, "]\n [ ", 5);
+//        else
+//            write(1, "]", 1);
         currentColumn = columns;
         count++;
         index = count;
     }
-    write(1, "]\n", 2);
+//    write(1, "]\n", 2);
 }
 
 void parseEntry(const char* cursor, param& parameter, int32_t& valueSize, int32_t& shapeSize)
@@ -320,7 +320,7 @@ int main(int argc, char** argv)
     param A, B;
     int32_t valueSize, shapeSize;
 
-    int32_t loops = 2000; // ~5:20 seconds, ATmega 2560
+    int32_t loops = 200000; // ~5:20 seconds, ATmega 2560
     while(loops--)
     {
         int i = 0;
