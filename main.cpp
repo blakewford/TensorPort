@@ -334,12 +334,14 @@ void* iteration(void*)
     return nullptr;
 }
 
-#ifndef __linux__
-int get_nprocs()
+int platform_get_nprocs()
 {
+#ifdef __linux__
+    return get_nprocs();
+#else
     return 8;
-}
 #endif
+}
 
 int main(int argc, char** argv)
 {
@@ -363,7 +365,7 @@ int main(int argc, char** argv)
     }
 #endif
 
-    const int processors = get_nprocs();
+    const int processors = platform_get_nprocs();
     pthread_t thread[processors];
 
     int count = processors;
