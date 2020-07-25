@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <atomic>
 
-#ifdef __LINUX__
+#ifdef __linux__
 #include <sys/sysinfo.h>
 #endif
 
@@ -308,7 +308,7 @@ void* iteration(void*)
 
     int core = gNextCore.fetch_add(1);
 
-#ifdef __LINUX__
+#ifdef __linux__
     cpu_set_t cpuset;
     CPU_ZERO(&cpuset);
     CPU_SET(core, &cpuset);
@@ -334,7 +334,7 @@ void* iteration(void*)
     return nullptr;
 }
 
-#ifndef __LINUX__
+#ifndef __linux__
 int get_nprocs()
 {
     return 8;
